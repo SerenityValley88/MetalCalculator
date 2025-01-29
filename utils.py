@@ -31,22 +31,26 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
     # Calculate number of sheets needed for one side of gable
     sheets_per_side = math.ceil(width / (2 * sheet_width_ft))
 
-    # Calculate length increment based on pitch
-    # Scale factor of pitch/4 means 4/12 pitch = 1' increment, 8/12 pitch = 2' increment
-    length_increment = pitch / 4
+    # Calculate rise increment per sheet width
+    rise_per_sheet_inches = math.ceil((sheet_width * pitch) / 12)  # Round up to nearest inch
+    rise_per_sheet_feet = rise_per_sheet_inches / 12
 
     # Generate ascending and descending gable sheet lengths
     gable_sheet_lengths = []
-    start_length = height + length_increment  # Start length increment above wall height
+    start_length = height + rise_per_sheet_feet  # Start with first increment above wall height
 
     # Ascending lengths
     for i in range(sheets_per_side):
-        sheet_length = start_length + (i * length_increment)
+        sheet_length = start_length + (i * rise_per_sheet_feet)
+        # Round to nearest inch (1/12 of a foot)
+        sheet_length = round(sheet_length * 12) / 12
         gable_sheet_lengths.append(sheet_length)
 
     # Descending lengths (excluding the peak to avoid duplication)
     for i in range(sheets_per_side - 1, -1, -1):
-        sheet_length = start_length + (i * length_increment)
+        sheet_length = start_length + (i * rise_per_sheet_feet)
+        # Round to nearest inch (1/12 of a foot)
+        sheet_length = round(sheet_length * 12) / 12
         gable_sheet_lengths.append(sheet_length)
 
     # Walls
