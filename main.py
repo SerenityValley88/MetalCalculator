@@ -9,10 +9,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Load custom CSS
-with open("styles.css") as f:
-    st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-
 # Title and introduction
 st.title("🏗️ Construction Sheathing Calculator")
 st.markdown("""
@@ -23,7 +19,7 @@ in your construction project. Enter the building dimensions below to get started
 # Input form
 with st.form("sheathing_calculator"):
     col1, col2 = st.columns(2)
-    
+
     with col1:
         st.markdown("### Building Dimensions")
         length = st.number_input(
@@ -33,7 +29,7 @@ with st.form("sheathing_calculator"):
             value=40.0,
             help="Enter the length of the building in feet"
         )
-        
+
         width = st.number_input(
             "Building Width (ft)",
             min_value=1.0,
@@ -41,7 +37,7 @@ with st.form("sheathing_calculator"):
             value=30.0,
             help="Enter the width of the building in feet"
         )
-        
+
         height = st.number_input(
             "Wall Height (ft)",
             min_value=1.0,
@@ -49,7 +45,6 @@ with st.form("sheathing_calculator"):
             value=10.0,
             help="Enter the height of the walls in feet"
         )
-        
 
     with col2:
         st.markdown("### Roof Specifications")
@@ -60,7 +55,7 @@ with st.form("sheathing_calculator"):
             value=4.0,
             help="Enter the roof pitch (rise over run, e.g., 4 for a 4/12 pitch)"
         )
-        
+
         overhang = st.number_input(
             "Overhang (inches)",
             min_value=0.0,
@@ -68,7 +63,7 @@ with st.form("sheathing_calculator"):
             value=16.0,
             help="Enter the overhang length in inches"
         )
-        
+
         sheet_width = st.number_input(
             "Sheet Width (inches)",
             min_value=10.0,
@@ -91,10 +86,10 @@ if calculate_button:
             overhang=overhang,
             sheet_width=sheet_width
         )
-        
+
         # Display results
         st.markdown("### 📊 Calculation Results")
-        
+
         # Format and display results table
         results_df = format_results(results)
         st.dataframe(
@@ -102,7 +97,7 @@ if calculate_button:
             hide_index=True,
             use_container_width=True
         )
-        
+
         # Additional information
         st.markdown("### 📝 Notes")
         st.markdown("""
@@ -111,7 +106,7 @@ if calculate_button:
         - All measurements assume standard construction practices
         - Additional material should be ordered to account for waste and cuts
         """)
-        
+
     except Exception as e:
         st.error(f"An error occurred during calculations: {str(e)}")
         st.markdown("Please check your input values and try again.")
