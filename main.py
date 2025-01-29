@@ -49,6 +49,7 @@ with st.form("sheathing_calculator"):
             value=10.0,
             help="Enter the height of the walls in feet"
         )
+        
 
     with col2:
         st.markdown("### Roof Specifications")
@@ -70,7 +71,7 @@ with st.form("sheathing_calculator"):
         
         sheet_width = st.number_input(
             "Sheet Width (inches)",
-            min_value=24.0,
+            min_value=10.0,
             max_value=48.0,
             value=36.0,
             help="Enter the width of the sheathing sheets in inches"
