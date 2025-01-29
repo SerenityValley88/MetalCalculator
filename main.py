@@ -72,6 +72,47 @@ with st.form("sheathing_calculator"):
             help="Enter the width of the sheathing sheets in inches"
         )
 
+    # Side Shed Section
+    include_side_shed = st.checkbox("Include Side Shed", value=False)
+
+    if include_side_shed:
+        st.markdown("### Side Shed Specifications")
+        col3, col4 = st.columns(2)
+
+        with col3:
+            shed_width = st.number_input(
+                "Shed Width (ft)",
+                min_value=1.0,
+                max_value=100.0,
+                value=12.0,
+                help="Enter the width of the side shed"
+            )
+
+            shed_depth = st.number_input(
+                "Shed Depth (ft)",
+                min_value=1.0,
+                max_value=100.0,
+                value=20.0,
+                help="Enter the depth of the side shed"
+            )
+
+        with col4:
+            shed_pitch = st.number_input(
+                "Shed Roof Pitch (x/12)",
+                min_value=1.0,
+                max_value=12.0,
+                value=3.0,
+                help="Enter the roof pitch for the side shed"
+            )
+
+            shed_height = st.number_input(
+                "Shed Wall Height (ft)",
+                min_value=1.0,
+                max_value=40.0,
+                value=8.0,
+                help="Enter the wall height of the side shed"
+            )
+
     calculate_button = st.form_submit_button("Calculate Sheathing")
 
 # Calculate and display results
@@ -84,7 +125,12 @@ if calculate_button:
             height=height,
             pitch=pitch,
             overhang=overhang,
-            sheet_width=sheet_width
+            sheet_width=sheet_width,
+            include_shed=include_side_shed,
+            shed_width=shed_width if include_side_shed else None,
+            shed_depth=shed_depth if include_side_shed else None,
+            shed_pitch=shed_pitch if include_side_shed else None,
+            shed_height=shed_height if include_side_shed else None
         )
 
         # Display results
