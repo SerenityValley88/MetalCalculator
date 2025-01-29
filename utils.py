@@ -28,15 +28,25 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
     # Calculate peak height using pitch
     peak_height = (half_gable_width) * (pitch / 12)
 
-    # Calculate number of sheets needed for gable width
-    num_sheets = math.ceil(width / sheet_width_ft)
+    # Calculate number of sheets needed for one side of gable
+    sheets_per_side = math.ceil(width / (2 * sheet_width_ft))
 
-    # Generate gable sheet lengths starting at wall height + 1'
+    # Calculate length increment based on pitch
+    # Scale factor of pitch/4 means 4/12 pitch = 1' increment, 8/12 pitch = 2' increment
+    length_increment = pitch / 4
+
+    # Generate ascending and descending gable sheet lengths
     gable_sheet_lengths = []
-    start_length = height + 1  # Start 1' above wall height
+    start_length = height + length_increment  # Start length increment above wall height
 
-    for i in range(num_sheets):
-        sheet_length = start_length + i  # Increment by 1' for each sheet
+    # Ascending lengths
+    for i in range(sheets_per_side):
+        sheet_length = start_length + (i * length_increment)
+        gable_sheet_lengths.append(sheet_length)
+
+    # Descending lengths (excluding the peak to avoid duplication)
+    for i in range(sheets_per_side - 1, -1, -1):
+        sheet_length = start_length + (i * length_increment)
         gable_sheet_lengths.append(sheet_length)
 
     # Walls
@@ -53,7 +63,7 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
 
     return {
         "Eave Walls": {"Sheets": eave_wall_sheets, "Sheet Length": wall_sheet_length},
-        "Gable Triangles": {"Sheets": num_sheets * 2, "Sheet Lengths": gable_sheet_lengths},
+        "Gable Triangles": {"Sheets": len(gable_sheet_lengths), "Sheet Lengths": gable_sheet_lengths},
         "Roof": {"Sheets": total_roof_sheets, "Sheet Length": roof_sheet_length},
     }
 
