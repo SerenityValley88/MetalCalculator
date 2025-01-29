@@ -4,82 +4,77 @@ import pandas as pd
 def calculate_sheathing(length: float, width: float, height: float, pitch: float, 
                        overhang: float, sheet_width: float) -> dict:
     """
-    Calculate sheathing requirements for building construction.
-    
+    Dynamically calculates the required metal sheets for walls, gable ends, and roof.
+
     Args:
-        length (float): Building length in feet
-        width (float): Building width in feet
+        length (float): Length of the building in feet
+        width (float): Width of the building in feet
         height (float): Wall height in feet
         pitch (float): Roof pitch (x/12)
         overhang (float): Overhang length in inches
         sheet_width (float): Sheet width in inches
-        
+
     Returns:
         dict: Dictionary containing sheathing calculations
     """
-    # Convert sheet width to feet
-    sheet_width_ft = sheet_width / 12
+    # Convert sheet width and overhang from inches to feet
+    sheet_width_ft = sheet_width / 12  
+    overhang_ft = overhang / 12
 
-    # Adjust building dimensions for overhangs
-    eave_length = length
-    gable_width = width + 2 * (overhang / 12)
-    roof_run = (gable_width / 2)
-    roof_rise = (roof_run * (pitch / 12))
-    roof_slope_length = math.sqrt(roof_run**2 + roof_rise**2)
-    roof_length = length + 2 * (overhang / 12)
+    # Adjust building dimensions for overhang
+    gable_width = width + 2 * overhang_ft  # Include overhang
+    half_gable_width = gable_width / 2  # Half-width for triangle calculations
 
-    # Calculate wall sheets
-    eave_wall_sheets = math.ceil(eave_length / sheet_width_ft) * 2
-    gable_wall_sheets = math.ceil(width / sheet_width_ft) * 2
+    # Calculate peak height using pitch
+    peak_height = (half_gable_width) * (pitch / 12)
+
+    # Calculate staggered gable sheet lengths
+    gable_sheet_lengths = []
+    num_sheets = math.ceil(width / sheet_width_ft)
+
+    for i in range(num_sheets):
+        sheet_length = height + ((peak_height / num_sheets) * i)  # Staggered increase
+        sheet_length = math.ceil(sheet_length * 2) / 2  # Round up to nearest 0.5'
+        gable_sheet_lengths.append(sheet_length)
+
+    # Walls
+    eave_wall_sheets = math.ceil(length / sheet_width_ft) * 2
     wall_sheet_length = height
 
-    # Calculate gable triangle sheets
-    gable_triangle_sheets = math.ceil(width / sheet_width_ft) * 2
-    gable_triangle_lengths = [11, 12, 13, 14, 15, 15, 14, 13, 12, 11]
-
-    # Calculate roof sheets
+    # Roof
+    roof_run = half_gable_width
+    roof_slope_length = math.sqrt(roof_run**2 + peak_height**2)
+    roof_length = length + 2 * overhang_ft
     roof_sheets_per_side = math.ceil(roof_length / sheet_width_ft)
-    roof_sheet_length = math.ceil(roof_slope_length * 2) / 2
+    roof_sheet_length = math.ceil(roof_slope_length * 2) / 2  # Round up to 0.5'
     total_roof_sheets = roof_sheets_per_side * 2
 
     return {
-        "Eave Walls": {
-            "Sheets": eave_wall_sheets,
-            "Sheet Length": wall_sheet_length
-        },
-        "Gable Walls": {
-            "Sheets": gable_wall_sheets,
-            "Sheet Length": wall_sheet_length
-        },
-        "Gable Triangles": {
-            "Sheets": gable_triangle_sheets,
-            "Sheet Lengths": gable_triangle_lengths
-        },
-        "Roof": {
-            "Sheets": total_roof_sheets,
-            "Sheet Length": roof_sheet_length
-        }
+        "Eave Walls": {"Sheets": eave_wall_sheets, "Sheet Length": wall_sheet_length},
+        "Gable Triangles": {"Sheets": num_sheets * 2, "Sheet Lengths": gable_sheet_lengths},
+        "Roof": {"Sheets": total_roof_sheets, "Sheet Length": roof_sheet_length},
     }
 
 def format_results(results: dict) -> pd.DataFrame:
     """
     Format calculation results into a pandas DataFrame.
-    
+
     Args:
         results (dict): Dictionary containing sheathing calculations
-        
+
     Returns:
         pd.DataFrame: Formatted results
     """
     formatted_data = []
-    
+
     for section, details in results.items():
         if section == "Gable Triangles":
+            lengths_str = ", ".join(f"{length:.1f}'" for length in details["Sheet Lengths"])
             formatted_data.append({
                 "Section": section,
                 "Number of Sheets": details["Sheets"],
-                "Sheet Length (ft)": "Variable (11'-15')",
-                "Notes": "Staggered lengths for triangular sections"
+                "Sheet Length (ft)": f"Variable: {lengths_str}",
+                "Notes": "Staggered lengths for optimal coverage"
             })
         else:
             formatted_data.append({
@@ -88,5 +83,5 @@ def format_results(results: dict) -> pd.DataFrame:
                 "Sheet Length (ft)": f"{details['Sheet Length']:.1f}",
                 "Notes": ""
             })
-    
+
     return pd.DataFrame(formatted_data)
