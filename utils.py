@@ -27,14 +27,20 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
 
     # Calculate peak height using pitch
     peak_height = (half_gable_width) * (pitch / 12)
+    total_gable_height = height + peak_height
 
-    # Calculate staggered gable sheet lengths
-    gable_sheet_lengths = []
+    # Calculate number of sheets needed for gable width
     num_sheets = math.ceil(width / sheet_width_ft)
 
+    # Calculate sheet length increment based on peak height and number of sheets
+    length_increment = 1.0  # Fixed 1 foot increment as per requirement
+
+    # Generate gable sheet lengths starting 1ft below peak height
+    gable_sheet_lengths = []
+    start_length = math.floor(total_gable_height) - (num_sheets - 1)
+
     for i in range(num_sheets):
-        sheet_length = height + ((peak_height / num_sheets) * i)  # Staggered increase
-        sheet_length = math.ceil(sheet_length * 2) / 2  # Round up to nearest 0.5'
+        sheet_length = start_length + (i * length_increment)
         gable_sheet_lengths.append(sheet_length)
 
     # Walls
