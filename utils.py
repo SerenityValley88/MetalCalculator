@@ -67,7 +67,7 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
 
     return {
         "Eave Walls": {"Sheets": eave_wall_sheets, "Sheet Length": wall_sheet_length},
-        "Gable Triangles": {"Sheets": len(gable_sheet_lengths), "Sheet Lengths": gable_sheet_lengths},
+        "Gable Triangles": {"Sheets": len(gable_sheet_lengths) * 2, "Sheet Lengths": gable_sheet_lengths},  # Doubled for both sides
         "Roof": {"Sheets": total_roof_sheets, "Sheet Length": roof_sheet_length},
     }
 
