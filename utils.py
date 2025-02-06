@@ -23,6 +23,7 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
 
     # Adjust building dimensions for overhang
     gable_width = width + 2 * overhang_ft  # Include overhang
+    eave_length = length + 2 * overhang_ft  # Include overhang
     half_gable_width = gable_width / 2  # Half-width for triangle calculations
 
     # Calculate peak height using pitch
@@ -70,21 +71,27 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
     gable_linear_feet = sum(gable_sheet_lengths) * 2  # Double for both sides
     roof_linear_feet = total_roof_sheets * roof_sheet_length
 
+    # Calculate total perimeter feet of roofline
+    perimeter_feet = (eave_length * 2) + (gable_width * 2)  # Total perimeter including overhang
+
     return {
         "Eave Walls": {
             "Sheets": eave_wall_sheets, 
             "Sheet Length": wall_sheet_length,
-            "Linear Feet": wall_linear_feet
+            "Linear Feet": wall_linear_feet,
+            "Perimeter Feet": eave_length * 2
         },
         "Gable Triangles": {
             "Sheets": len(gable_sheet_lengths) * 2, 
             "Sheet Lengths": gable_sheet_lengths,
-            "Linear Feet": gable_linear_feet
+            "Linear Feet": gable_linear_feet,
+            "Perimeter Feet": gable_width * 2
         },
         "Roof": {
             "Sheets": total_roof_sheets, 
             "Sheet Length": roof_sheet_length,
-            "Linear Feet": roof_linear_feet
+            "Linear Feet": roof_linear_feet,
+            "Perimeter Feet": perimeter_feet
         },
     }
 
@@ -109,6 +116,7 @@ def format_results(results: dict) -> pd.DataFrame:
                 "Number of Sheets": details["Sheets"],
                 "Sheet Length (ft)": f"Variable: {lengths_str}",
                 "Total Linear Feet (3' Sections)": f"{math.ceil(details['Linear Feet'] / 3) * 3:.1f}'",
+                "Perimeter Feet": f"{details['Perimeter Feet']:.1f}'",
                 "Notes": "Staggered lengths for optimal coverage"
             })
         else:
@@ -117,6 +125,7 @@ def format_results(results: dict) -> pd.DataFrame:
                 "Number of Sheets": details["Sheets"],
                 "Sheet Length (ft)": f"{details['Sheet Length']:.1f}'",
                 "Total Linear Feet (3' Sections)": f"{math.ceil(details['Linear Feet'] / 3) * 3:.1f}'",
+                "Perimeter Feet": f"{details['Perimeter Feet']:.1f}'",
                 "Notes": ""
             })
         total_linear_feet += math.ceil(details['Linear Feet'] / 3) * 3
@@ -127,6 +136,7 @@ def format_results(results: dict) -> pd.DataFrame:
         "Number of Sheets": sum(details["Sheets"] for section, details in results.items()),
         "Sheet Length (ft)": "-",
         "Total Linear Feet (3' Sections)": f"{total_linear_feet:.1f}'",
+        "Perimeter Feet": f"{results['Roof']['Perimeter Feet']:.1f}'",
         "Notes": "Total linear feet required"
     })
 
