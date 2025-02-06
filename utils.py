@@ -65,10 +65,27 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
     roof_sheet_length = math.ceil(roof_slope_length * 2) / 2  # Round up to 0.5'
     total_roof_sheets = roof_sheets_per_side * 2
 
+    # Calculate total linear feet for each section
+    wall_linear_feet = eave_wall_sheets * wall_sheet_length
+    gable_linear_feet = sum(gable_sheet_lengths) * 2  # Double for both sides
+    roof_linear_feet = total_roof_sheets * roof_sheet_length
+
     return {
-        "Eave Walls": {"Sheets": eave_wall_sheets, "Sheet Length": wall_sheet_length},
-        "Gable Triangles": {"Sheets": len(gable_sheet_lengths) * 2, "Sheet Lengths": gable_sheet_lengths},  # Doubled for both sides
-        "Roof": {"Sheets": total_roof_sheets, "Sheet Length": roof_sheet_length},
+        "Eave Walls": {
+            "Sheets": eave_wall_sheets, 
+            "Sheet Length": wall_sheet_length,
+            "Linear Feet": wall_linear_feet
+        },
+        "Gable Triangles": {
+            "Sheets": len(gable_sheet_lengths) * 2, 
+            "Sheet Lengths": gable_sheet_lengths,
+            "Linear Feet": gable_linear_feet
+        },
+        "Roof": {
+            "Sheets": total_roof_sheets, 
+            "Sheet Length": roof_sheet_length,
+            "Linear Feet": roof_linear_feet
+        },
     }
 
 def format_results(results: dict) -> pd.DataFrame:
@@ -82,6 +99,7 @@ def format_results(results: dict) -> pd.DataFrame:
         pd.DataFrame: Formatted results
     """
     formatted_data = []
+    total_linear_feet = 0
 
     for section, details in results.items():
         if section == "Gable Triangles":
@@ -90,14 +108,26 @@ def format_results(results: dict) -> pd.DataFrame:
                 "Section": section,
                 "Number of Sheets": details["Sheets"],
                 "Sheet Length (ft)": f"Variable: {lengths_str}",
+                "Total Linear Feet (3' Sections)": f"{math.ceil(details['Linear Feet'] / 3) * 3:.1f}'",
                 "Notes": "Staggered lengths for optimal coverage"
             })
         else:
             formatted_data.append({
                 "Section": section,
                 "Number of Sheets": details["Sheets"],
-                "Sheet Length (ft)": f"{details['Sheet Length']:.1f}",
+                "Sheet Length (ft)": f"{details['Sheet Length']:.1f}'",
+                "Total Linear Feet (3' Sections)": f"{math.ceil(details['Linear Feet'] / 3) * 3:.1f}'",
                 "Notes": ""
             })
+        total_linear_feet += math.ceil(details['Linear Feet'] / 3) * 3
+
+    # Add total row
+    formatted_data.append({
+        "Section": "TOTAL",
+        "Number of Sheets": sum(details["Sheets"] for section, details in results.items()),
+        "Sheet Length (ft)": "-",
+        "Total Linear Feet (3' Sections)": f"{total_linear_feet:.1f}'",
+        "Notes": "Total linear feet required"
+    })
 
     return pd.DataFrame(formatted_data)
