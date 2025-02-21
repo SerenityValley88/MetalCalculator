@@ -2,9 +2,9 @@ import math
 import pandas as pd
 
 def calculate_sheathing(length: float, width: float, height: float, pitch: float, 
-                       overhang: float, sheet_width: float) -> dict:
+                       overhang: float, sheet_width: float, porch_params: dict = None) -> dict:
     """
-    Dynamically calculates the required metal sheets for walls, gable ends, and roof.
+    Dynamically calculates the required metal sheets for walls, gable ends, roof, and optional porch.
 
     Args:
         length (float): Length of the building in feet
@@ -13,6 +13,10 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
         pitch (float): Roof pitch (x/12)
         overhang (float): Overhang length in inches
         sheet_width (float): Sheet width in inches
+        porch_params (dict, optional): Dictionary containing porch dimensions:
+            - length: Length of porch in feet
+            - depth: Depth of porch in feet
+            - pitch: Porch roof pitch (x/12)
 
     Returns:
         dict: Dictionary containing sheathing calculations
@@ -66,15 +70,15 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
     roof_sheet_length = math.ceil(roof_slope_length * 2) / 2  # Round up to 0.5'
     total_roof_sheets = roof_sheets_per_side * 2
 
-    # Calculate total linear feet for each section
+    # Calculate linear feet
     wall_linear_feet = eave_wall_sheets * wall_sheet_length
     gable_linear_feet = sum(gable_sheet_lengths) * 2  # Double for both sides
     roof_linear_feet = total_roof_sheets * roof_sheet_length
 
-    # Calculate total perimeter feet of roofline
-    perimeter_feet = (eave_length * 2) + (gable_width * 2)  # Total perimeter including overhang
+    # Calculate perimeter feet
+    perimeter_feet = (eave_length * 2) + (gable_width * 2)
 
-    return {
+    result = {
         "Eave Walls": {
             "Sheets": eave_wall_sheets, 
             "Sheet Length": wall_sheet_length,
@@ -92,8 +96,36 @@ def calculate_sheathing(length: float, width: float, height: float, pitch: float
             "Sheet Length": roof_sheet_length,
             "Linear Feet": roof_linear_feet,
             "Perimeter Feet": perimeter_feet
-        },
+        }
     }
+
+    # Calculate porch roof if parameters provided
+    if porch_params:
+        porch_length = porch_params['length']
+        porch_depth = porch_params['depth']
+        porch_pitch = porch_params['pitch']
+
+        # Calculate porch roof dimensions
+        porch_run = porch_depth + overhang_ft
+        porch_rise = (porch_run * porch_pitch) / 12
+        porch_slope_length = math.sqrt(porch_run**2 + porch_rise**2)
+
+        # Calculate sheets needed
+        porch_length_with_overhang = porch_length + overhang_ft
+        porch_sheets = math.ceil(porch_length_with_overhang / sheet_width_ft)
+
+        # Calculate linear feet and perimeter
+        porch_linear_feet = porch_sheets * porch_slope_length
+        porch_perimeter = (porch_length * 2) + porch_depth
+
+        result["Porch Roof"] = {
+            "Sheets": porch_sheets,
+            "Sheet Length": math.ceil(porch_slope_length * 2) / 2,  # Round up to 0.5'
+            "Linear Feet": porch_linear_feet,
+            "Perimeter Feet": porch_perimeter
+        }
+
+    return result
 
 def format_results(results: dict) -> pd.DataFrame:
     """

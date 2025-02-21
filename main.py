@@ -18,7 +18,7 @@ in your construction project. Enter the building dimensions below to get started
 
 # Input form
 with st.form("sheathing_calculator"):
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         st.markdown("### Building Dimensions")
@@ -49,7 +49,7 @@ with st.form("sheathing_calculator"):
     with col2:
         st.markdown("### Roof Specifications")
         pitch = st.number_input(
-            "Roof Pitch (x/12)",
+            "Main Roof Pitch (x/12)",
             min_value=1.0,
             max_value=12.0,
             value=4.0,
@@ -72,19 +72,59 @@ with st.form("sheathing_calculator"):
             help="Enter the width of the sheathing sheets in inches"
         )
 
+    with col3:
+        st.markdown("### Porch Specifications")
+        has_porch = st.checkbox("Include Porch Roof", value=False)
+
+        porch_length = st.number_input(
+            "Porch Length (ft)",
+            min_value=0.0,
+            max_value=200.0,
+            value=0.0,
+            help="Enter the length of the porch in feet",
+            disabled=not has_porch
+        )
+
+        porch_depth = st.number_input(
+            "Porch Depth (ft)",
+            min_value=0.0,
+            max_value=40.0,
+            value=0.0,
+            help="Enter the depth of the porch in feet",
+            disabled=not has_porch
+        )
+
+        porch_pitch = st.number_input(
+            "Porch Roof Pitch (x/12)",
+            min_value=1.0,
+            max_value=12.0,
+            value=4.0,
+            help="Enter the porch roof pitch (rise over run)",
+            disabled=not has_porch
+        )
+
     calculate_button = st.form_submit_button("Calculate Sheathing")
 
 # Calculate and display results
 if calculate_button:
     try:
         # Perform calculations
+        porch_params = None
+        if has_porch and porch_length > 0 and porch_depth > 0:
+            porch_params = {
+                "length": porch_length,
+                "depth": porch_depth,
+                "pitch": porch_pitch
+            }
+
         results = calculate_sheathing(
             length=length,
             width=width,
             height=height,
             pitch=pitch,
             overhang=overhang,
-            sheet_width=sheet_width
+            sheet_width=sheet_width,
+            porch_params=porch_params
         )
 
         # Display results
