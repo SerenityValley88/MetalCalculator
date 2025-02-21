@@ -16,6 +16,13 @@ This calculator helps you determine the number of sheets needed for wall and roo
 in your construction project. Enter the building dimensions below to get started.
 """)
 
+# Initialize session state for porch checkbox
+if 'has_porch' not in st.session_state:
+    st.session_state.has_porch = False
+
+# Porch checkbox outside the form
+st.session_state.has_porch = st.checkbox("Include Porch Roof", value=st.session_state.has_porch)
+
 # Input form
 with st.form("sheathing_calculator"):
     col1, col2, col3 = st.columns(3)
@@ -74,15 +81,14 @@ with st.form("sheathing_calculator"):
 
     with col3:
         st.markdown("### Porch Specifications")
-        has_porch = st.checkbox("Include Porch Roof", value=False)
 
         porch_length = st.number_input(
             "Porch Length (ft)",
             min_value=0.0,
             max_value=200.0,
             value=0.0,
-            help="Enter the length of the porch in feet",
-            disabled=not has_porch
+            disabled=not st.session_state.has_porch,
+            help="Enter the length of the porch in feet"
         )
 
         porch_depth = st.number_input(
@@ -90,8 +96,8 @@ with st.form("sheathing_calculator"):
             min_value=0.0,
             max_value=40.0,
             value=0.0,
-            help="Enter the depth of the porch in feet",
-            disabled=not has_porch
+            disabled=not st.session_state.has_porch,
+            help="Enter the depth of the porch in feet"
         )
 
         porch_pitch = st.number_input(
@@ -99,8 +105,8 @@ with st.form("sheathing_calculator"):
             min_value=1.0,
             max_value=12.0,
             value=4.0,
-            help="Enter the porch roof pitch (rise over run)",
-            disabled=not has_porch
+            disabled=not st.session_state.has_porch,
+            help="Enter the porch roof pitch (rise over run)"
         )
 
     calculate_button = st.form_submit_button("Calculate Sheathing")
@@ -110,7 +116,7 @@ if calculate_button:
     try:
         # Perform calculations
         porch_params = None
-        if has_porch and porch_length > 0 and porch_depth > 0:
+        if st.session_state.has_porch and porch_length > 0 and porch_depth > 0:
             porch_params = {
                 "length": porch_length,
                 "depth": porch_depth,
